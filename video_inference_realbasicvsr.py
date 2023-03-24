@@ -156,6 +156,7 @@ if __name__ == '__main__':
         for j in range(start, end):
             try:
                 frame = video_reader.get_frame()
+                frame = np.flip(frame, axis=2)
                 if frame is None:
                     continue
                 frame = torch.from_numpy(frame / 255.).permute(2, 0, 1).float()
@@ -173,6 +174,7 @@ if __name__ == '__main__':
         for k in range(0, out_frame_group.size(1)):
             img = tensor2img(out_frame_group[:, k, :, :, :])
             restore_img_dqueue.append(RestoreImageWrapper(img))
+        frame_group = []
 
     restore_img_dqueue.append(RestoreImageWrapper(is_ended=True))
 
