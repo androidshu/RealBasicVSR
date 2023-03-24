@@ -144,7 +144,20 @@ if __name__ == '__main__':
     total_count = video_reader.nb_frames
     step = args.max_seq_len
     if step is None:
-        step = int(fps * 2)
+        coe = 2
+        minWH = min(video_reader.height, video_reader.width)
+        if minWH <= 320:
+            coe = 3
+        elif minWH <= 480:
+            coe = 2
+        elif minWH <= 720:
+            coe = 1
+        elif minWH <= 1080:
+            coe = 0.5
+        else:
+            coe = 0.2
+        step = max(1, int(fps * coe))
+        print(f'\nminWH:{minWH}, step:{step}')
     for i in tqdm(range(0, total_count, step)):
         torch.cuda.empty_cache()
         start = i
