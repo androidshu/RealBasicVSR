@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import gc
 
 import cv2
 import mmcv
@@ -101,6 +102,8 @@ def main():
     if torch.cuda.is_available():
         model = model.cuda()
         cuda_flag = True
+    torch.cuda.empty_cache()
+    gc.collect()
 
     with torch.no_grad():
         if isinstance(args.max_seq_len, int):
