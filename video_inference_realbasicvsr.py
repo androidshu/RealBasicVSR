@@ -156,7 +156,7 @@ if __name__ == '__main__':
             coe = 0.5
         else:
             coe = 0.2
-        step = max(1, int(fps * coe))
+        step = max(1, int(25 * coe))
         print(f'\nminWH:{minWH}, step:{step}')
     for i in tqdm(range(0, total_count, step)):
         torch.cuda.empty_cache()
