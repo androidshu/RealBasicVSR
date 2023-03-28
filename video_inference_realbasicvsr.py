@@ -144,24 +144,30 @@ if __name__ == '__main__':
     total_count = video_reader.nb_frames
     step = args.max_seq_len
     if step is None:
-        coe = 2
-        minWH = min(video_reader.height, video_reader.width)
-        if minWH <= 320:
-            coe = 4
-        elif minWH <= 480:
-            coe = 3
-        elif minWH <= 540:
-            coe = 2
-        elif minWH <= 640:
-            coe = 1
-        elif minWH <= 720:
-            coe = 0.4
-        elif minWH <= 1080:
-            coe = 0.1
-        else:
-            coe = 0.001
-        step = max(1, int(25 * coe))
-        print(f'\nminWH:{minWH}, step:{step}')
+        ratio = 1.0
+        video_width = video_reader.width
+        video_height = video_reader.height
+
+        total_pixel = video_reader.height * video_reader.width
+        concurrent_count = int(pow(1080 * 1920 / total_pixel, 3))
+        # minWH = min(video_reader.height, video_reader.width)
+        # if minWH <= 320:
+        #     ratio = 3.5
+        # elif minWH <= 480:
+        #     ratio = 2.5
+        # elif minWH <= 540:
+        #     ratio = 2
+        # elif minWH <= 640:
+        #     ratio = 1
+        # elif minWH <= 720:
+        #     ratio = 0.4
+        # elif minWH <= 1080:
+        #     ratio = 0.1
+        # else:
+        #     ratio = 0.001
+        # concurrent_count = 25 * ratio
+        step = min(max(1, concurrent_count), 100)
+        print(f'\nvideo_width:{video_width}, video_height:{video_height}, total_pixel:{total_pixel}, curr_count:{concurrent_count}, step:{step}')
 
     result_root = args.output_dir
     if not os.path.exists(result_root):
