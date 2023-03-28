@@ -147,8 +147,12 @@ if __name__ == '__main__':
         coe = 2
         minWH = min(video_reader.height, video_reader.width)
         if minWH <= 320:
-            coe = 2
+            coe = 4
         elif minWH <= 480:
+            coe = 3
+        elif minWH <= 540:
+            coe = 2
+        elif minWH <= 640:
             coe = 1
         elif minWH <= 720:
             coe = 0.4
