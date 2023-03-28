@@ -153,9 +153,9 @@ if __name__ == '__main__':
         elif minWH <= 720:
             coe = 1
         elif minWH <= 1080:
-            coe = 0.5
-        else:
             coe = 0.2
+        else:
+            coe = 0.001
         step = max(1, int(25 * coe))
         print(f'\nminWH:{minWH}, step:{step}')
     for i in tqdm(range(0, total_count, step)):
