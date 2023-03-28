@@ -131,9 +131,9 @@ if __name__ == '__main__':
 
     fps = video_reader.get_fps()
     audio = video_reader.audio
-    thread_pool = ThreadPoolExecutor()
-    video_save_feature = thread_pool.submit(save_as_video_async, args.output_dir, video_name,
-                                            fps, audio, restore_img_dqueue)
+    # thread_pool = ThreadPoolExecutor()
+    # video_save_feature = thread_pool.submit(save_as_video_async, args.output_dir, video_name,
+    #                                         fps, audio, restore_img_dqueue)
 
     # map to cuda, if available
     cuda_flag = False
@@ -147,17 +147,27 @@ if __name__ == '__main__':
         coe = 2
         minWH = min(video_reader.height, video_reader.width)
         if minWH <= 320:
-            coe = 3
-        elif minWH <= 480:
             coe = 2
-        elif minWH <= 720:
+        elif minWH <= 480:
             coe = 1
+        elif minWH <= 720:
+            coe = 0.4
         elif minWH <= 1080:
-            coe = 0.2
+            coe = 0.1
         else:
             coe = 0.001
         step = max(1, int(25 * coe))
         print(f'\nminWH:{minWH}, step:{step}')
+
+    result_root = args.output_dir
+    if not os.path.exists(result_root):
+        os.makedirs(result_root)
+
+    video_full_name = f'{video_name}.mp4'
+    save_restore_path = os.path.join(result_root, video_full_name)
+
+    video_writer = None
+
     for i in tqdm(range(0, total_count, step)):
         torch.cuda.empty_cache()
         start = i
@@ -184,16 +194,27 @@ if __name__ == '__main__':
             if cuda_flag:
                 frame_group = frame_group.cuda()
             out_frame_group = model(frame_group, test_mode=True)['output'].cpu()
+            frame_group = []
         for k in range(0, out_frame_group.size(1)):
             img = tensor2img(out_frame_group[:, k, :, :, :])
-            restore_img_dqueue.append(RestoreImageWrapper(img))
-        frame_group = []
+            # restore_img_dqueue.append(RestoreImageWrapper(img))
+            if video_writer is None:
+                height, width = img.shape[:2]
+                video_writer = VideoWriter(save_restore_path, height, width, fps, audio)
 
-    restore_img_dqueue.append(RestoreImageWrapper(is_ended=True))
+            try:
+                video_writer.write_frame(img)
+            except Exception as e:
+                print(f"error:{e}")
+        out_frame_group = []
 
-    video_save_feature.result()
+    # restore_img_dqueue.append(RestoreImageWrapper(is_ended=True))
+
+    # video_save_feature.result()
     if video_reader is not None:
         video_reader.close()
-    thread_pool.shutdown()
+    if video_writer is not None:
+        video_writer.close()
+    # thread_pool.shutdown()
     end_time = time.time()
     print('\nAll results are saved in {}, all cost time:{:.2f}秒'.format(args.output_dir, end_time - start_time))
